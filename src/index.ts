@@ -3,7 +3,6 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import admin from "firebase-admin";
-import path from "path";
 import { WebSocketServer } from "ws";
 
 dotenv.config();
@@ -11,14 +10,6 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-
-// Load service account key
-const serviceAccount = require(path.resolve("serviceAccountKey.json"));
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: process.env.FIREBASE_DB_URL // required for RTDB
-});
 
 // Create WebSocket server
 const wss = new WebSocketServer({ port: 8080 });
