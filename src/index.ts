@@ -26,23 +26,11 @@ wss.on("connection", (ws) => {
   });
 });
 
-// Realtime Database tokens path: /tokens/userId => token
-async function getAllUserTokens(): Promise<string[]> {
-  const snapshot = await admin.database().ref("tokens").once("value");
-  const data = snapshot.val();
-  return data ? Object.values(data) : [];
-}
-
-type SendNotificationRequest = {
-  title: string;
-  body: string;
-  icon?: string;
-};
-
 // Send notification to all connected clients
-app.post('/send-notification', (req, res) => {
-  const { title, body } = req.body;
-  const message = JSON.stringify({ title, body });
+app.post("/send-notification", (req: any, res: any) => {
+  const { title, body, app } = req.body;
+  const message = JSON.stringify({ title, body, app });
+  console.log('message: ', message);
 
   sockets.forEach((ws) => {
     if (ws.readyState === ws.OPEN) {
@@ -52,48 +40,6 @@ app.post('/send-notification', (req, res) => {
 
   res.json({ success: true });
 });
-
-// Send FCM notification to all users + broadcast via WebSocket
-const handleSend = async (
-  req: Request<any, any, SendNotificationRequest>,
-  res: Response
-) => {
-  const { title, body, icon } = req.body;
-
-  if (!title || !body) {
-    return res.status(400).json({ error: "Missing title or body" });
-  }
-
-  try {
-    const tokens = await getAllUserTokens();
-
-    if (tokens.length === 0) {
-      return res.status(200).json({ success: false, message: "No tokens found" });
-    }
-
-    // Send FCM messages
-    const message = {
-      notification: { title, body },
-      tokens,
-    };
-
-    const response = await admin.messaging().sendEachForMulticast(message);
-
-    // Broadcast via WebSocket to all connected clients
-    const payload = JSON.stringify({ title, body, icon });
-    sockets.forEach((ws) => {
-      if (ws.readyState === ws.OPEN) {
-        ws.send(payload);
-      }
-    });
-
-    res.status(200).json({ success: true, response });
-  } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-};
-
-app.post("/send", handleSend as express.RequestHandler);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
