@@ -12,7 +12,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Create WebSocket server
-const wss = new WebSocketServer({ port: 8080 });
+const wss = new WebSocketServer({ port: 8086 });
 
 const sockets: Set<any> = new Set();
 
@@ -44,5 +44,5 @@ app.post("/send-notification", (req: any, res: any) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 HTTP server running at http://localhost:${PORT}`);
-  console.log(`🔌 WebSocket server running at ws://localhost:8080`);
+  console.log(`🔌 WebSocket server running at ws://localhost:8086`);
 });
